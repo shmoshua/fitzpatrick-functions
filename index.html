@@ -1,0 +1,38 @@
+<!doctype html>
+<meta charset="utf-8">
+<script src="https://distill.pub/template.v2.js"></script>
+
+<script type="text/front-matter">
+  title: "Your Post Title"
+  description: "A short description"
+  authors:
+  - Your Name: https://yourusername.github.io
+  affiliations:
+  - ETH Zurich: https://ethz.ch
+</script>
+
+<dt-article>
+  <h1>Your Post Title</h1>
+  <h2>A subtitle or brief description</h2>
+  <dt-byline></dt-byline>
+
+  <h2>Introduction</h2>
+  <p>Your content here. You can write inline math like \(f(x) = x^2\)
+  or display math:</p>
+  
+  <p>$$\min_{x \in \mathbb{R}^n} f(x)$$</p>
+
+  <p>And cite papers <dt-cite key="nesterov1983"></dt-cite>.</p>
+
+</dt-article>
+
+<dt-appendix></dt-appendix>
+
+<script type="text/bibliography">
+@article{nesterov1983,
+  title={A method of solving a convex programming problem},
+  author={Nesterov, Yurii},
+  journal={Soviet Mathematics Doklady},
+  year={1983}
+}
+</script>
