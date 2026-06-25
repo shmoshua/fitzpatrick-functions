@@ -1,38 +1,1363 @@
 <!doctype html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
-<script src="https://distill.pub/template.v2.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fitzpatrick Functions of Entropy Subdifferentials</title>
+<meta name="description" content="Finding the closed form and the convergence rate of Fitzpatrick functions of entropy subdifferentials.">
 
-<script type="text/front-matter">
-  title: "Your Post Title"
-  description: "A short description"
-  authors:
-  - Your Name: https://yourusername.github.io
-  affiliations:
-  - ETH Zurich: https://ethz.ch
+<!-- Open Graph (nice link previews) -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fitzpatrick Functions of Entropy Subdifferentials">
+<meta property="og:description" content="Finding the closed form and the convergence rate of Fitzpatrick functions of entropy subdifferentials.">
+
+<!-- Fonts: display / body / mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- MathJax 3: inline \( \) and display $$ $$, auto-numbered equations -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)'], ['$', '$']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      tags: 'all'
+    },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
 </script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-<dt-article>
-  <h1>Your Post Title</h1>
-  <h2>A subtitle or brief description</h2>
-  <dt-byline></dt-byline>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   Palette: soft white + near-black ink, phthalo green accent.
+   Type:    Space Grotesk (display) / Source Serif 4 (body) / IBM Plex Mono (code)
 
-  <h2>Introduction</h2>
-  <p>Your content here. You can write inline math like \(f(x) = x^2\)
-  or display math:</p>
-  
-  <p>$$\min_{x \in \mathbb{R}^n} f(x)$$</p>
+   ── HOW TO CHANGE FONTS ─────────────────────────────────────
+   Three variables drive every font on the page:
+     --sans   headings, labels, UI chrome
+     --serif  body text (long prose and math context)
+     --mono   code, Lean snippets, numeric outputs
 
-  <p>And cite papers <dt-cite key="nesterov1983"></dt-cite>.</p>
+   To swap a font:
+   1. Go to https://fonts.google.com and pick a family.
+   2. Click "Get font" → "Get embed code" → choose @import.
+      Copy the URL that looks like:
+        https://fonts.googleapis.com/css2?family=Lora:ital,wght@...
+   3. Replace (or add) that URL in the <link> tag near the top
+      of this file (look for "Fonts: display / body / mono").
+   4. Change the corresponding variable below, e.g.:
+        --serif: "Lora", Georgia, serif;
+      (always keep a generic fallback: serif / sans-serif / monospace)
 
-</dt-article>
+   Some good swaps to try:
+     SANS (display):  "Outfit", "DM Sans", "Bricolage Grotesque"
+     SERIF (body):    "Lora", "Spectral", "Playfair Display", "EB Garamond"
+     MONO (code):     "JetBrains Mono", "Fira Code", "Inconsolata"
 
-<dt-appendix></dt-appendix>
+   You don't need to use three different families. Using the same
+   family for --sans and --serif (e.g. all "EB Garamond") gives a
+   classical, unified look. For math-heavy writing, a serif body
+   pairs most naturally with MathJax's default math font.
+   ─────────────────────────────────────────────────────────── */
+:root {
+  --paper:    #f5f8f5;   /* very light, slightly green-tinted white */
+  --ink:      #111a14;   /* near-black with a green undertone       */
+  --muted:    #556158;   /* desaturated green-grey for captions      */
+  --rule:     #d9e4da;   /* hairline dividers                        */
+  --accent:   #0d6e5a;   /* phthalo green                           */
+  --accent-2: #8fada0;   /* muted teal for secondary plot line       */
+  --box-bg:   #edf3ee;   /* theorem box background                   */
+  --box-rule: #cfddd0;   /* theorem box border                       */
+  --sel:      #b8e0d4;   /* text selection highlight                 */
 
-<script type="text/bibliography">
-@article{nesterov1983,
-  title={A method of solving a convex programming problem},
-  author={Nesterov, Yurii},
-  journal={Soviet Mathematics Doklady},
-  year={1983}
+  --measure: 56rem;       /* body text column width  */
+  --wide:    58rem;       /* breakout figures        */
+  --serif: "Source Serif 4", Georgia, serif;
+  --sans:  "Space Grotesk", system-ui, sans-serif;
+  --mono:  "IBM Plex Mono", ui-monospace, monospace;
 }
+@media (prefers-color-scheme: light) {
+  :root {
+    --paper:    #0d1410;
+    --ink:      #ddeee0;
+    --muted:    #7a9e85;
+    --rule:     #1e3024;
+    --accent:   #3ecfaa;
+    --accent-2: #4a7a6a;
+    --box-bg:   #0f1e17;
+    --box-rule: #1c3325;
+    --sel:      #0e3d2e;
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.65;
+  font-feature-settings: "onum" 1, "pnum" 1;
+}
+::selection { background: var(--sel); }
+
+/* ---- Layout: centered measure, with breakout helpers ---- */
+.article { max-width: var(--measure); margin: 0 auto; padding: 0 1.4rem; }
+.wide  { max-width: var(--wide); }
+.wide, .full { margin-left: auto; margin-right: auto; }
+@media (min-width: 1100px) {
+  .wide { width: var(--wide); max-width: none;
+          margin-left: calc((var(--measure) - var(--wide)) / 2); }
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+header.masthead { padding: 4.5rem 0 1.5rem; }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 1.1rem;
+}
+h1.title {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: clamp(2rem, 4.5vw, 3.05rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.1rem;
+  text-wrap: balance;
+}
+.authors {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 1.02rem;
+  margin: 0 0 .25rem;
+}
+.affil { color: var(--muted); font-size: .95rem; margin: 0 0 1.4rem; }
+.affil a, .authors a { color: inherit; }
+
+.links { display: flex; flex-wrap: wrap; gap: .6rem; margin: 0 0 1rem; }
+.links a {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: .82rem;
+  text-decoration: none;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: .4rem .95rem;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.links a:hover { border-color: var(--accent); color: var(--accent); }
+.links a .arr { color: var(--muted); }
+
+.rule { border: 0; border-top: 1px solid var(--rule); margin: 2rem 0; }
+
+/* ============================================================
+   ABSTRACT
+   ============================================================ */
+.abstract {
+  font-size: 1.04rem;
+  color: var(--ink);
+}
+.abstract .lead-label {
+  font-family: var(--mono);
+  font-size: .7rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: .5rem;
+}
+
+/* ============================================================
+   TYPOGRAPHY / SECTIONS
+   ============================================================ */
+.article h2 {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  margin: 3.2rem 0 1rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--rule);
+}
+.article h3 {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin: 2.2rem 0 .6rem;
+}
+/* Section numbering driven by content order, not decoration */
+.article { counter-reset: sec; }
+.article h2.numbered { counter-increment: sec; counter-reset: subsec; }
+.article h2.numbered::before {
+  content: counter(sec) "  ";
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.article h3.numbered { counter-increment: subsec; }
+.article h3.numbered::before {
+  content: counter(sec) "." counter(subsec) "  ";
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+p { margin: 0 0 1.1rem; }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+strong { font-weight: 600; }
+
+/* Margin / side notes (collapse inline on small screens) */
+.sidenote {
+  font-size: .82rem;
+  line-height: 1.5;
+  color: var(--muted);
+  font-family: var(--sans);
+}
+@media (min-width: 1100px) {
+  .sidenote {
+    float: right;
+    clear: right;
+    width: 12rem;
+    margin-right: -13.5rem;
+    margin-top: .15rem;
+    position: relative;
+  }
+}
+@media (max-width: 1099px) {
+  .sidenote {
+    display: block;
+    border-left: 2px solid var(--accent);
+    padding-left: .8rem;
+    margin: 1rem 0;
+  }
+}
+
+/* ── Table of Contents ── */
+.toc {
+  position: fixed;
+  top: 4rem;
+  left: max(1.5rem, calc(50% - var(--measure)/2 - 14rem));
+  width: 12rem;
+  font-family: var(--sans);
+  font-size: .78rem;
+  line-height: 1.5;
+}
+.toc-title {
+  font-family: var(--mono);
+  font-size: .68rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .7rem;
+}
+.toc ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-left: 1px solid var(--rule);
+}
+.toc li a {
+  display: block;
+  padding: .25rem 0 .25rem .9rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color .15s, border-color .15s;
+  border-left: 2px solid transparent;
+  margin-left: -1px;
+}
+.toc li a:hover { color: var(--ink); }
+.toc li a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+.toc li.subsec a { padding-left: 1.6rem; font-size: .74rem; }
+
+/* hide on narrow screens where there's no room */
+@media (max-width: 1100px) { .toc { display: none; } }
+
+/* ============================================================
+   THEOREM / DEFINITION BOXES — the workhorse of a math post
+   ============================================================ */
+.box {
+  background: var(--box-bg);
+  border: 1px solid var(--box-rule);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 1rem 1.3rem;
+  margin: 1rem 0;
+}
+.box .box-title {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: .95rem;
+  margin-bottom: .4rem;
+}
+.box.theorem .box-title { color: var(--accent); }
+.box p:last-child { margin-bottom: 0; }
+.box .statement { font-style: italic; }
+
+details.proof {
+  margin: -0.8rem 0 0.2rem;
+  padding-left: 0;
+  border-left: none;
+}
+details.proof summary {
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  padding: 0.5rem 0;
+  list-style: none;
+}
+details.proof summary::before {
+  content: "▸ Proof.";
+  font-style: normal;
+}
+details.proof[open] summary::before {
+  content: "▾ Proof.";
+  font-style: normal;
+}
+details.proof summary::-webkit-details-marker { display: none; }
+details.proof .proof-end {
+  text-align: right;
+  color: var(--muted);
+  margin-top: 0rem;
+  margin-bottom: 0.4rem;
+}
+/* ============================================================
+   FIGURES + INTERACTIVE DEMO
+   ============================================================ */
+figure { margin: 2rem 0; }
+figcaption {
+  font-family: var(--sans);
+  font-size: .82rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: .7rem;
+}
+figcaption b { color: var(--ink); font-weight: 600; }
+
+.demo {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 1.1rem 1.1rem .9rem;
+  background: color-mix(in srgb, var(--box-bg) 55%, var(--paper));
+}
+.demo canvas { width: 100%; height: auto; display: block; }
+.controls {
+  display: flex; align-items: center; gap: .9rem;
+  margin-top: .8rem;
+  font-family: var(--sans); font-size: .85rem;
+}
+.controls label { color: var(--muted); white-space: nowrap; }
+.controls input[type=range] { flex: 1; accent-color: var(--accent); }
+.controls output {
+  font-family: var(--mono); font-size: .82rem;
+  min-width: 4.5rem; text-align: right; color: var(--ink);
+}
+.legend { display: flex; gap: 1.2rem; margin-top: .6rem;
+          font-family: var(--sans); font-size: .8rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: .4rem; }
+.legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+
+/* ============================================================
+   CODE (e.g. Lean snippets)
+   ============================================================ */
+pre, code { font-family: var(--mono); font-size: .85em; }
+code { background: var(--box-bg); padding: .1em .35em; border-radius: 4px; }
+pre {
+  background: var(--box-bg);
+  border: 1px solid var(--box-rule);
+  border-radius: 6px;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  line-height: 1.55;
+}
+pre code { background: none; padding: 0; }
+
+/* ============================================================
+   MATH — center display blocks, tabular numbering
+   ============================================================ */
+mjx-container[display="true"] { margin: 1.5rem 0 !important; }
+
+/* ============================================================
+   REFERENCES + FOOTNOTES
+   ============================================================ */
+.references { font-size: .92rem; }
+.references ol { padding-left: 1.4rem; }
+.references li { margin-bottom: .7rem; color: var(--muted); }
+.references li a { color: var(--accent); }
+sup.cite { font-size: .72em; }
+sup.cite a { text-decoration: none; padding: 0 .1em; }
+
+footer {
+  border-top: 1px solid var(--rule);
+  margin-top: 4rem;
+  padding: 2rem 0 4rem;
+  font-family: var(--sans);
+  font-size: .82rem;
+  color: var(--muted);
+}
+
+/* Accessibility niceties */
+a:focus-visible, .links a:focus-visible, input:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ====================== TABLE OF CONTENTS ====================== -->
+<nav class="toc">
+  <div class="toc-title">Contents</div>
+  <ol>
+    <li><a href="#sec-prelim">1  Preliminaries</a></li>
+    <li class="subsec"><a href="#sec-max-cycle">1.1  Maximally Cyclically Monotone Operators and Fitzpatrick Functions</a></li>
+    <li class="subsec"><a href="#sec-subdifferentials">1.2  Subdifferentials as a Maximal Cyclically Monotone Operator</a></li>
+    <li><a href="#sec-fenchel-young">2  Fitzpatrick Functions and Fenchel-Young Gap</a></li>
+    <li><a href="#sec-entropy">3  Fitzpatrick Functions of Entropy Subdifferentials</a></li>
+    <li class="subsec"><a href="#sec-negentropy">3.1  Negative Entropy</a></li>
+    <li class="subsec"><a href="#sec-tsallis">3.2  Tsallis Entropy</a></li>
+    <li class="subsec"><a href="#sec-norm">3.3  Norm</a></li>
+    <li class="subsec"><a href="#sec-neglog">3.4  Negative Logarithm</a></li>
+    <li class="subsec"><a href="#sec-exp">3.5  Exponential</a></li>
+    <li><a href="#sec-convergence-rate">4  Convergence Rate of Fitzpatrick Functions</a></li>
+  </ol>
+</nav>
+
+<!-- ====================== HEADER ====================== -->
+<header class="masthead article">
+  <p class="eyebrow">Optimization</p>
+  <h1 class="title">On Fitzpatrick Functions of Entropy Subdifferentials</h1>
+  <p class="authors">Joshua Sangbeom Park </p>
+  <!-- · Stefan-Alexandru Popescu · Anna Pecheanu · Mingyu Hu -->
+  <p class="affil">ETH Zurich — AI for Mathematics and Optimization, Spring 2026</p>
+  <nav class="links">
+    <!-- <a href="paper.pdf">Paper <span class="arr">↗</span></a>
+    <a href="https://github.com/your-org/your-lean-repo">Lean&nbsp;formalization <span class="arr">↗</span></a> -->
+    <a href="#references">References <span class="arr">↓</span></a>
+  </nav>
+</header>
+
+<!-- ====================== ABSTRACT ====================== -->
+<section class="article abstract">
+  <hr class="rule">
+  <span class="lead-label">Abstract</span>
+  <p>I'm hungry but it's also so warm to eat.</p>
+</section>
+
+<!-- ====================== BODY ====================== -->
+<article class="article">
+
+  <h2 class="numbered" id="sec-prelim">Preliminaries</h2>
+  <h3 class="numbered" id="sec-max-cycle">Maximal Cyclically Monotone Operators and Fitzpatrick Functions</h3>
+
+  
+    <span class="sidenote">$n$-cyclically monotone operators</span></p>
+  <p>Let \(X\) be a Banach space and \(X^*\) its dual. An operator $A: X \to 2^{X^*}$ is <strong>$n$-cyclically monotone</strong> if 
+    for any $n$ points $(x_1, x_1^*), \ldots, (x_n, x_n^*) \in \text{gra}(A):= \{(x,x^*) \in X \times X^* : x^* \in Ax\}$, we have
+    $$ \sum_{i=1}^n \langle x_{i+1} - x_i,\, x_i^* \rangle \ge 0 $$
+    where the indices are taken modulo $n$. Further, $A$ is <strong>cyclically monotone</strong> if it is $n$-cyclically monotone for all $n \ge 2$.</p>
+
+    <span class="sidenote">maximal $n$-cyclically monotone operators</span></p>
+    <p>Similarly, an operator $A: X \to 2^{X^*}$ is <strong>maximal $n$-cyclically monotone</strong> 
+        if it is $n$-cyclically monotone and there is no other $n$-cyclically monotone operator $B: X \to 2^{X^*}$ such that $\text{gra}(A) \subsetneq \text{gra}(B)$. 
+        Further, $A$ is <strong>maximal cyclically monotone</strong> if it is maximal $n$-cyclically monotone for all $n \ge 2$.</p>
+
+
+  <span class="sidenote">Fitzpatrick functions</span></p>
+ <p>Now, we can define the Fitzpatrick function for an operator \(A: X \to 2^{X^*}\). 
+    The <strong>\(n\)-th order Fitzpatrick function</strong> of \(A\) is a function $F_{A,n}:X\times X^*\to (-\infty,+\infty]$ defined by:
+
+  $$F_{A,n}(x_n, x_0^*) := \sup_{\{(x_i,\, x_i^*)\}_{i \in [n-1]} \subseteq \text{gra}(A)}
+    \langle x_1,\, x_0^* \rangle
+    + \sum_{i=1}^{n-1} \langle x_{i+1} - x_i,\, x_i^* \rangle$$
+
+    whereas the <strong>infinite-order Fitzpatrick function</strong> of \(A\) is defined as $F_{A,\infty}(x, x^*) := \sup_{n \ge 2} F_{A,n}(x, x^*)$.
+  </p>
+
+
+  We then have the following results from Bartz et&nbsp;al.<sup class="cite"><a href="#ref-bartz2007">[1]</a></sup>
+
+
+  <div class="box theorem">
+    <div class="box-title">Fact 1 — Properties of Fitzpatrick Functions</div>
+    <p class="statement" style="margin-bottom: -1em">Let \(A: X \to 2^{X^*}\) and $n \ge 2$. 
+        <ol>
+        <li>\(F_{A,n}\) is convex and lower semicontinuous.</li>
+        <li>$F_{A,n} \ge \langle x, x^* \rangle$ for all $(x, x^*) \in X \times X^*$.</li>
+        <li>\(A\) is maximal \(n\)-cyclically monotone if and only if $\operatorname{gra}(A) = \{(x, x^*) \in X \times X^* : F_{A,n}(x, x^*) = \langle x, x^* \rangle\}$ 
+        </li>
+    </ol>
+    </p>
+  </div>
+
+  Note that $(F_{A,n})_{n \ge 2}$ is an increasing sequence of functions and we have $F_{A,n}\to F_{A,\infty}$ pointwise. As a corollary, we have the following result:
+  $$
+  \langle x,x^* \rangle \le F_{A,2}(x,x^*) \le F_{A,3}(x,x^*) \le \ldots \le F_{A,\infty}(x,x^*),\quad \forall (x,x^*) \in X \times X^*.
+  $$
+
+  <h3 class="numbered" id="sec-subdifferentials">Subdifferentials as a Maximal Cyclically Monotone Operator</h3>
+
+  The famous result from Rockafellar<sup class="cite"><a href="#ref-rockafellar1970">[2]</a></sup> states that the maximal cyclically monotone operators in $\mathbb{R}$
+  are precisely the subdifferentials of proper, convex, lower semicontinuous functions. As a consequence, Bartz et&nbsp;al.<sup class="cite"><a href="#ref-bartz2007">[1]</a></sup> showed that:
+
+  <div class="box theorem">
+    <div class="box-title">Fact 2 — Refinement of Fenchel-Young Inequality</div>
+    <p class="statement" style="margin-bottom: -1em">Let $f$ be a proper, convex, lower semicontinuous function. 
+        Then, for all $(x,x^*) \in X \times X^*$, we have:
+        $$
+        \langle x,x^*\rangle \le F_{\partial f,2}(x,x^*) \le F_{\partial f,3}(x,x^*) \le \ldots \le F_{\partial f,\infty}(x,x^*)=f(x)+f^*(x^*)
+        $$
+    </p>
+  </div>
+
+  <span class="sidenote">Fitzpatrick gap</span></p>
+  Therefore, for a proper, convex, l.s.c. function $f$, we define the <strong>$n$-th order Fitzpatrick gap</strong> $\Delta_{f,n}(x, x^*)$ as follows:
+  $$
+  \Delta_{f,n}(x, x^*) := f(x)+f^*(x^*) - F_{\partial f,n}(x, x^*).
+  $$
+  In our study, we aim to find a closed form for $\Delta_{f,n}(x, x^*)$ for different entropy functions $f$, and analyze its convergence rate as $n \to \infty$.
+
+
+  <h2 class="numbered" id="sec-fenchel-young">Fitzpatrick Functions and Fenchel-Young Gap</h2>
+    <span class="sidenote">Fenchel-Young gap</span></p>
+    <p>Let $f:X\to(-\infty,+\infty]$ be proper. For $(x,x^*) \in X \times X^*$ define the <strong>Fenchel-Young gap</strong> \(d_f(x,x^*)\) as
+    \[
+    d_f(x,x^*)\;:=\;f(x)+f^*(x^*)-\langle x,x^*\rangle .
+    \]</p>
+
+    Then, one easily sees that for $f$ proper, convex, and l.s.c., the Fenchel-Young gap is nonnegative and vanishes if and only if $x^*\in\partial f(x)$ (equivalently $x\in\partial f^*(x^*)$).
+    
+    <div class="box theorem">
+    <div class="box-title">Theorem 2.1 — Characterization of Fitzpatrick Function using Fenchel-Young Gap</div>
+    <p class="statement">
+        Let $f:X\to(-\infty,+\infty]$ be proper, convex, and l.s.c. Then
+        for every $(x,x^*)$ and every $n\ge 2$,
+        \[
+        F_{\partial f,n}(x,x^*)
+        \;=\;
+        f(x)+f^*(x^*)
+        \;-\;\inf\;\sum_{i=0}^{n-1} d_f\bigl(x_{i+1},\,x_{i}^*\bigr),
+        \]
+        where the infimum is over the same chains
+        $(x_i,x_i^*)\in\operatorname{gra}(\partial f)$, $i\in [n-1]$, with $x_0^*=x^*$, $x_n=x$.
+    </p>
+    </div>
+
+  <details class="proof">
+    <summary></summary>
+    <p> As we optimize over the chain $(x_i,x_i^*)\in\operatorname{gra}(\partial f)$, $i\in [n-1]$, with $x_0^*=x^*$, $x_n=x$, we can write using the Fenchel-Young inequality:
+
+        $$
+        \begin{aligned}
+            F_{\partial f,n}(x_n,x_0^*)
+            &=\sup\langle x_1,x^*_0\rangle+\sum_{i=1}^{n-1}\langle x_{i+1}-x_i,x_i^*\rangle
+            \\&=\sup\sum_{i=0}^{n-1}\langle x_{i+1},x_i^*\rangle - \sum_{i=1}^{n-1}\langle x_i,x_i^*\rangle
+            \\&=\sup\sum_{i=0}^{n-1}[f(x_{i+1})+f^*(x^*_{i})-d_{f}(x_{i+1},x^*_{i})]-\sum_{i=1}^{n-1}[f(x_i)+f^*(x_i^*)] 
+            \\&=\sup f(x_n)+f^*(x^*_0)-\sum_{i=0}^{n-1}d_f(x_{i+1},x^*_{i})
+            \\&=f(x)+f^*(x^*)-\inf\sum_{i=0}^{n-1}d_f(x_{i+1},x^*_{i})
+        \end{aligned}
+        $$
+
+    </p>
+    <p class="proof-end">□</p>
+    </details>
+
+    This gives us the corollary that the Fitzpatrick gap can be expressed in terms of the Fenchel-Young gap as follows:
+    $$
+    \Delta_{f,n}(x,x^*)\;=\;\inf\;\sum_{i=0}^{n-1} d_f\bigl(x_{i+1},\,x_{i}^*\bigr),
+    $$
+
+    Further, as the convex conjugate $f^*$ is also proper, convex, and l.s.c., we can apply the same theorem to $f^*$ to get the following results:
+    <ol>
+        <li> $d_{f^*}(x^*,x)=d_f(x,x^*)$</li>
+        <li> $\Delta_{f^*,n}(x^*,x)=\Delta_{f,n}(x,x^*)$</li>
+        <li> $F_{\partial f^*,n}(x^*,x)=F_{\partial f,n}(x,x^*)$</li>
+    </ol>
+
+    Before we move on to the Fitzpatrick functions of entropy subdifferentials, we introduce another extension of the result from Bauschke et al.<sup class="cite"><a href="#ref-bauschke2006">[3]</a></sup> that will be useful in our analysis. 
+    <div class="box theorem" id="#thm:2.2">
+    <div class="box-title">Theorem 2.2 </div>
+    <p class="statement">
+        Let $f:X\to \mathbb{R}\cup\{+\infty\}$ be convex, l.s.c., and proper. Then, for any $n\ge 2$, we have: 
+        $$
+        \operatorname{dom} f\times \operatorname{dom} f^*\subseteq \operatorname{dom} F_{\partial f,n}\subseteq \overline{\operatorname{dom} f}\times \overline{\operatorname{dom} f^*}
+        $$
+    </p>
+    </div>
+
+    <details class="proof">
+    <summary></summary>
+    <p> The result for $n=2$ is already shown in Bauschke et al.<sup class="cite"><a href="#ref-bauschke2006">[3]</a></sup>. 
+        Let $(x,x^*)\in \operatorname{dom} F_{\partial f,n}$. Then, for the 2nd-order optimizer $(a,a^*)\in \operatorname{gra}(\partial f)$, by setting $(a_1,a_1^*)=\cdots=(a_{n-1},a_{n-1}^*)=(a,a^*)$,
+        $$
+        +\infty >F_{\partial f,n}(x,x^*)\ge \langle x-a,a^*\rangle+\langle a,x^*\rangle = F_{\partial f,2}(x,x^*).
+        $$and $(x,x^*)\in \operatorname{dom} F_{\partial f,2}$. Hence, by the result for $n=2$, $(x,x^*)\in \overline{\operatorname{dom} f}\times \overline{\operatorname{dom} f^*}$.
+
+        For the other inclusion, assume $(x,x^*)\in \operatorname{dom} f\times \operatorname{dom} f^*$. Now, let $\{(a_i,a_i^*)\}_{i\in[n-1]}\subseteq\text{gra}(\partial f)$ be arbitrary. By definition we have that:
+        $$
+        \langle a_{i+1}-a_i,a_i^*\rangle\le f(a_{i+1}) - f(a_i),\quad \langle x-a_{n-1},a^*_{n-1}\rangle \le f(x)-f(a_{n-1})
+        $$Summing the chains give us via Fenchel-Young:
+        $$
+        \langle x-a_{n-1},a^*_{n-1}\rangle +\sum_{i=1}^{n-2}\langle a_{i+1}-a_i,a_i^*\rangle +\langle a_1,x^*\rangle\le f(x)-f(a_1)+\langle a_1,x^*\rangle\le f(x)+f^*(x^*)
+        $$Hence, $F_{\partial f,n}(x,x^*)\le f(x)+f^*(x^*)<+\infty$. This concludes the proof.
+    </p>
+    <p class="proof-end">□</p>
+    </details>
+    
+
+
+
+  
+
+  <h2 class="numbered" id="sec-entropy">Fitzpatrick Functions for Entropy Subdifferentials</h2>
+  <h3 class="numbered" id="sec-negentropy">Negative Entropy</h3>
+
+
+    <span class="sidenote">Negative entropy</span></p>
+    The <strong>negative entropy</strong> function is defined as: 
+    $$f:\mathbb{R}\to (-\infty,+\infty],\quad x\mapsto 
+    \begin{cases}+\infty&x<0\\0&x=0\\x \ln(x)-x&x>0\end{cases}$$ 
+
+    <p> One can see that $f$ is convex, proper and l.s.c. The subdifferential of negative entropy is given by $\partial f(x) = \{\ln(x)\}$ for $x>0$ and $\partial f(0) = \varnothing$. 
+        Further, the convex conjugate $f^*$ is given by $f^*=\exp$. Therefore, we can rewrite the Fitzpatrick function as follows:
+    </p>
+    $$
+    F_{\partial f,n}(x_n,x^*_0) = \sup_{x_1,\dots,x_{n-1}>0} \left[ x_1 x^* +\sum_{i=1}^{n-1} (x_{i+1}-x_i) \ln x_i \right]
+    $$
+
+    Bartz et&nbsp;al.<sup class="cite"><a href="#ref-bartz2007">[1]</a></sup> showed that the 2nd-order Fitzpatrick function for the negative entropy subdifferential can be expressed in closed form as follows:
+    <div class="box theorem">
+    <div class="box-title">Fact 3.1 — Closed Form for 2nd-order Fitzpatrick Function of Negative Entropy Subdifferential</div>
+    <p class="statement">
+        Let $f$ be the negative entropy function. Then:
+        $$
+            F_{\partial f,2}(x,x^*) =\begin{cases}
+                +\infty & x < 0 \\
+                \exp(x^*-1) & x = 0 \\
+                xx^*+x\left(W(\kappa)+\frac{1}{W(\kappa)}-2\right) & x > 0
+            \end{cases}
+        $$ where $\kappa = x \exp(1-x^*)$ and $W$ is the <a href="https://en.wikipedia.org/wiki/Lambert_W_function">Lambert W function</a>.
+    </p>
+    </div>
+    However, the authors state that they were unable to find a closed form for the higher order $(n \ge 3)$ Fitzpatrick function of the negative entropy subdifferential.
+    We introduce the following result:
+
+    <div class="box theorem">
+    <div class="box-title">Theorem 3.2 — Closed Form for Higher-order Fitzpatrick Function of Negative Entropy Subdifferential</div>
+    <p class="statement">
+        Let $f$ be the negative entropy function and $\Phi(w):=\exp(w-1)$. Then, for $n\ge 2$, we have:
+        $$
+            F_{\partial f,n}(x,x^*) =\begin{cases}
+                +\infty & x < 0 \\
+                f(x)+x-H^*_n(x) & x \ge  0
+            \end{cases}
+        $$ where $H_n(v):=\Phi^n(v)\exp(x^*)$ with $\Phi^n$ denoting the $n$-th iterate of $\Phi$.
+    </p>
+    </div>
+
+    <details class="proof">
+    <summary></summary>
+    <p> By <a href="#thm:2.2">Theorem 2.2</a>, $\operatorname{dom} F_{\partial f,n} = \mathbb{R}_{\ge 0} \times \mathbb{R}$ for all $n \ge 2$.
+
+        <p>We first rewrite the Fitzpatrick objective as a one-parameter optimization problem: 
+            Let $h$ be the objective function in the Fitzpatrick definition. Then, we have that the FOC's are given as below:
+        $$
+        \begin{aligned}
+            \frac{\partial h}{\partial x_{i}} &=-\ln x_i+\frac{x_{i+1}}{x_i}-1+\ln x_{i-1}=0, \quad \forall i=2,\dots,n-1 \\  
+            \frac{\partial h}{\partial x_{1}} &=-\ln x_1+\frac{x_2}{x_1}-1+x^*=0
+        \end{aligned}
+        $$</p>
+
+        Then, we define $r_i:= x_{i+1} / x_i$ and we have $\ln r_{i-1}=r_i-1$ and $\ln x_1=r_1-1+x^*$.
+        Therefore, 
+        
+        $$
+        \begin{aligned}
+        F_{\partial f,n}(x_n,x^*)&=\sum_{i=1}^{n-1}(x_{i+1}-x_i)\ln x_i + x_1x^*
+        \\&=\sum_{i=2}^{n}x_{i}\ln x_{i-1}-\sum_{i=1}^{n-1}x_i\ln x_i + x_1x^*
+        \\&=x_n \ln x_{n-1}-\sum_{i=2}^{n-1}x_{i}\ln r_{i-1} - x_1\ln x_1+ x_1x^*
+        \\&=x_n \ln x_{n-1}-\sum_{i=2}^{n-1}x_{i}(r_{i}-1) - x_1(r_1-1+x^*)+ x_1x^*
+        \\&=x_n \ln x_{n-1}-\sum_{i=1}^{n-1}(x_{i+1}-x_i)
+        \\&=x_n \ln x_{n-1}-x_n + x_1
+        \end{aligned}
+        $$
+        Let us define $w:= r_{n-1}$. Then, by the FOCs we get that $r_{n-k}=\Phi^{k-1}(w)$. Hence, the original $n-1$ variables collapse into a single parameter $w>0$ with the endpoints linked by: 
+        $$
+        x_{n-1}=\frac{x}{w},\quad x_1=\Phi^{n-1}(w) \exp(x^*)
+        $$
+
+        Therefore, we can rewrite the Fitzpatrick objective as a single parameter optimization problem:
+        $$
+            F_{\partial f,n}(x,x^*) = \inf_{w>0} \left[ x\ln \frac{x}{w}-x+\Phi^{n-1}(w)\exp (x^*)\right]
+        $$
+        Notice that the objective function in (21) is a strictly convex function. Further, the FOCs from above can be summarized into one equation:
+        $$
+        \Phi^{n-1}(w)\exp (x^*) = x_1=\frac{x}{r_{n-1}\cdots r_1}=\frac{x}{\prod_{0\le i\le n-2} \Phi^{i}(w)}
+        $$
+        i.e., $\prod_{0\le i\le n-1} \Phi^{i}(w)=x / \exp (x^*)$.
+
+        We show that this coincides with the FOC of the single parameter objective function: Indeed, let $g(w):=x\ln \frac{x}{w}-x+\Phi^{n-1}(w)\exp (x^*)$. Then, 
+        $$
+        g'(w)=-\frac{x}{w}+\exp (x^*)\prod_{k=1}^{n-1}\Phi^{k}(w)  = 0
+        $$This shows that the FOCs coincide. 
+
+        <p>
+            Therefore, we have that by substituting $v:=1+\ln w$:
+
+            $$
+            \begin{aligned}
+                F_{\partial f,n}(x,x^*) 
+                &= \inf_{w>0} \left[ x\ln \frac{x}{w}-x+\Phi^{n-1}(w)\exp (x^*)\right] 
+                \\&= f(x)+\inf_{w>0} \left[-x\ln w+\Phi^{n-1}(w)\exp (x^*)\right] 
+                \\&= f(x)+x-\sup_{v\in \mathbb{R}} \left[xv-\Phi^{n}(v)\exp(x^*)\right]
+                \\&= f(x)+x-H^*_n(x)
+            \end{aligned}
+            $$
+        </p>
+    </p>
+    <p class="proof-end">□</p>
+    </details>
+    
+    We have the following remarks: 
+    <ol>
+        <li> If $n=2$, we have $H_2(v)=\Phi^2(v)\exp(x^*)=\exp(\exp(v-1))/\exp(1-x^*)$. Hence, the convex conjugate is
+        $$H^*_2(x)=\sup_{v\in \mathbb{R}}[xv-\exp(\exp(v-1))/\exp(1-x^*)]$$ 
+        with the FOC given by $x=\exp(\exp(v-1))/\exp(1-x^*)\exp(v-1)$. Solving this we get that $e^{v-1}=W(\kappa)$ with $\kappa=x\exp(1-x^*)$. 
+        Hence, we have that $$H^*_2(x)=x(1+\ln W(\kappa))-\frac{\exp(W(\kappa))}{\exp(1-x^*)}=x(1+\ln W(\kappa))-\frac{x}{W(\kappa)}$$
+        This recovers Fact 3.1.
+        </li>
+        <li> Note that for $x>0$, we have that $f^*(\nabla f(x))=f^*(\ln x)=x$. Hence, we can rewrite the Fitzpatrick function as follows:
+        $$F_{\partial f,n}(x,x^*) = f(x)+f^*(\nabla f(x))-H^*_n(f^*(\nabla f(x)))$$
+        We will observe that this form will reappear in the Fitzpatrick functions of other entropy subdifferentials.
+        </li>
+    </ol>
+
+    <h3 class="numbered" id="sec-tsallis">Tsallis Entropy</h3>
+
+    <span class="sidenote">Tsallis entropy</span></p>
+    <p>For $p>1$, the <strong>$p$-Tsallis entropy</strong> function is defined as: 
+    $$
+    f:\mathbb{R}\to (-\infty,+\infty],\quad x\mapsto 
+    \begin{cases}+\infty & x<0 \\x^p/ p&x\ge 0\end{cases}
+    $$ 
+    with the subdifferential given by $\partial f(x) = \{x^{p-1}\}$ for $x>0$, $\partial f(0) = \mathbb{R}_{\le 0}$ and $\partial f(x) = \varnothing$ for $x<0$. 
+    Further, the convex conjugate is given by $f^*(x^*)=(x^*)^q/q$ for $x^*> 0$ where $1/p+1/q=1$ and $f^*(x^*)=0$ for $x^*\le 0$.</p>
+
+    <span class="sidenote">$p$-exponential</span></p>
+    <p> We first introduce the following functions: The <a href="https://en.wikipedia.org/wiki/Tsallis_entropy#q-exponential">$p$-exponential</a> and its inverse <strong>$p$-logarithm</strong> are defined as follows:
+    $$
+    \exp_p(x):=\begin{cases}
+        \exp (x)&p=1\\
+        [1+(1-p)x]_+^{1/(1-p)}&p\ne 1
+    \end{cases}\quad \quad 
+    \ln_p(x):=\begin{cases}
+        \ln (x)&p=1\\
+        \frac{x^{1-p}-1}{1-p}&p\ne 1
+    \end{cases}
+    $$where $[z]_+:=\max\{0,z\}$. These functions recover the standard exponential and logarithm in the limit $p\to 1$ and are inverses of each other. 
+    </p>
+
+    <div class="box theorem">
+    <div class="box-title">Theorem 3.3 — Closed Form for Higher-order Fitzpatrick Function of Tsallis Subdifferential</div>
+    <p class="statement">
+        Let $p>1$ and$f$ be the $p$-Tsallis entropy function and $\Phi_p(w):=\exp_p(w-1)$. Then, for $n\ge 2$, we have:
+        $$
+            F_{\partial f,n}(x,x^*) =\begin{cases}
+                +\infty & x < 0 \\
+                f(x)+f^*(\nabla f(x))-H^*_n(f^*(\nabla f(x))) & x \ge  0
+            \end{cases}
+        $$ where $H_n(v):=\Phi^n_p(v)f^*(x^*)$ with $\Phi^n_p$ denoting the $n$-th iterate of $\Phi_p$.
+    </p>
+    </div>
+
+
+    <details class="proof">
+    <summary></summary>
+    <p> By <a href="#thm:2.2">Theorem 2.2</a>, $\operatorname{dom} F_{\partial f,n} = \mathbb{R}_{\ge 0} \times \mathbb{R}$ for all $n \ge 2$.
+
+        <p>We, similarly to the negative entropy case, rewrite the Fitzpatrick objective as a one-parameter optimization problem: 
+            We have that the FOC's are given as below:
+        $$
+        \begin{aligned}
+            x_i^{p}-x_ix_{i-1}^{p-1}&=(p-1)(x_{i+1}-x_i)x^{p-1}_{i},\quad i\in\{2,\dots,n-1\} \\  
+            x_1^{p}-x_1x^*&=(p-1)(x_2-x_1)x^{p-1}_1
+        \end{aligned}
+        $$</p>
+
+        Then, we define $r_i:= x_{i+1} / x_i$ and get the following:
+        
+        $$
+        \begin{aligned}
+        F_{\partial f,n}(x_n,x^*)&=\sum_{i=1}^{n-1}(x_{i+1}-x_i)x_i^{p-1} + x_1x^*
+        \\&=\sum_{i=2}^{n}x_{i} x_{i-1}^{p-1}-\sum_{i=1}^{n-1}x_i^{p} + x_1x^*
+        \\&=x_nx_{n-1}^{p-1}-(p-1)\sum_{i=1}^{n-1}(x_{i+1}-x_i)x_i^{p-1}
+        \\&=x_nx_{n-1}^{p-1}-(p-1)\left[F_{\partial f,n}(x_n,x^*)-x_1x^*\right]
+        \end{aligned}
+        $$
+
+        Therefore, 
+        $$
+        \begin{aligned}
+        F_{\partial f,n}(x,x^*)
+        =\frac{x}{p}a_{n-1}^{p-1}+\frac{x^*}{q}a_1
+        \end{aligned}
+        $$
+        Let us define $w:= r_{n-1}$. Then, by the FOCs we get that $r_{i-1}^{1-p}=1+(1-p) (r_i-1)$ and $r_{i-1}=\Phi_p(r_i)$,  i.e. $r_{n-k}=\Phi_p^{k-1}(w)$. Hence, the original $n-1$ variables collapse into a single parameter $w>0$ with the endpoints linked by: 
+        $$
+        x_{n-1}=\frac{x}{w},\quad x_1=\Phi_p^{n-1}(w) (x^*)^{1/(p-1)}
+        $$
+
+        Therefore, we can rewrite the Fitzpatrick objective as a single parameter optimization problem:
+        $$
+            F_{\partial f,n}(x,x^*) = \inf_{w>0} \left[ \frac{x^p}{p}w^{1-p}+\frac{(x^*)^q}{q}\Phi_p^{n-1}(w)\right]= \inf_{w>0} \left[ f(x)w^{1-p}+f^*(x^*)\Phi_p^{n-1}(w)\right]
+        $$
+        Notice that the objective function in (35) is a strictly convex function. Further, the FOCs from above can be summarized into one equation:
+        $$
+        \Phi^{n-1}_p(w)(x^*)^{1/(p-1)} = x_1=\frac{x}{r_{n-1}\cdots r_1}=\frac{x}{\prod_{0\le i\le n-2} \Phi^{i}(w)}
+        $$
+        i.e., $\prod_{0\le i\le n-1} \Phi^{i}(w)=x(x^*)^{1/(1-p)}$.
+
+        We show that this coincides with the FOC of the single parameter objective function. Let $g(w):=f(x)w^{1-p}+f^*(x^*)\Phi_p^{n-1}(w)$. Then, we first have that:
+        $$
+        \Phi'_p(w)=(1+(p-1)(w-1))^{p / (1-p)} =\Phi_p(w)^p 
+        $$Therefore, $(\Phi^n_p)'(w) = \prod_{i=1}^{n}\Phi_p^i(w)^p$ and the FOC gives:
+
+        $$
+        xw^{-1}=(x^*)^{1/(p-1)}\prod_{i=1}^{n-1}\Phi_p^i(w)
+        $$
+        <p>
+            Lastly, we have that by substituting $v:=1+\ln_p w=1+\frac{w^{1-p}-1}{1-p}$: 
+
+            $$
+            \begin{aligned}
+                F_{\partial f,n}(x,x^*) 
+                &= \inf_{w>0} \left[ f(x)w^{1-p}+f^*(x^*)\Phi_p^{n-1}(w)\right]
+                \\&= \inf_{v} \left[ f(x)(1+(1-p)(v-1))+f^*(x^*)\Phi_p^{n}(v)\right]
+                \\&= \inf_{v} \left[ f(x)-\frac{x^p}{q}(v-1)+f^*(x^*)\Phi_p^{n}(v)\right]
+                \\&= \inf_{v} \left[ f(x)-f^*(\nabla f(x))(v-1)+f^*(x^*)\Phi_p^{n}(v)\right]
+                \\&= f(x)+f^*(\nabla f(x))+\inf_{v} \left[ -f^*(\nabla f(x)) v +f^*(x^*)\Phi_p^{n}(v)\right]
+                \\&= f(x)+f^*(\nabla f(x)) - H^*_n(f^*(\nabla f(x)))
+            \end{aligned}
+            $$
+        </p>
+    </p>
+    <p class="proof-end">□</p>
+    </details>
+
+    
+    <h3 class="numbered" id="sec-norm">Norm</h3>
+
+    Let $X$ be a real Hilbert space and $f:=\|\cdot\|$. Then, $f$ is proper, convex, and l.s.c. with the subdifferential given by:
+    
+    $$
+    \partial f(x) =\begin{cases}\{x/\|x\|\} & x\ne 0 \\ B_{\le 1}(0) & x=0\end{cases}
+    $$ where $B_{\le 1}(0)$ is the unit ball.
+    Further, the convex conjugate is given by $f^*=\iota_{B_{\le 1}(0)}$.
+
+    <div class="box theorem">
+    <div class="box-title">Theorem 3.4 — Closed Form for Higher-order Fitzpatrick Function of Norm</div>
+    <p class="statement">
+        Let $f:=\|\cdot\|$ be a norm. Then, for $n\ge 2$, we have:
+        $$
+            F_{\partial f,n}(x,x^*) =f(x)+f^*(x^*)=\|x\|+\iota_{B_{\le 1}(0)}(x^*)
+        $$ 
+    </p>
+    </div>
+
+
+
+    <details class="proof">
+    <summary></summary>
+    <p> Let $h$ be the Fitzpatrick objective function. Let $(x_i,x_i^*)\in \operatorname{gra} \partial f$ for all $i\in[n-1]$. We have the two cases:
+        <ol>
+            <li> Let $\|x^*\|>1$ Then, let $u:=x^* / \|x^*\|$ and $t>0$. We have that: 
+            $$
+            h((tu,u),...,(tu,u))=\langle x-tu,u\rangle+t\|x^*\|=\langle x,u\rangle+t(\|x^*\|-1)
+            $$Hence, $F_{\partial f,n}(x,x^*) = +\infty$.</li>
+            <li> If $\|x^*\|\le 1$, by the definition of subgradient and Cauchy-Schwarz, we have that:
+            $$
+            \begin{aligned}
+            h((x_1,x_1^*),...,(x_{n-1},x_{n-1}^*))&= \sum_{i=1}^{n-1}\langle x_{i+1}-x_i,x_i^*\rangle +\langle x_1,x^*\rangle \\
+            &\le  \sum_{i=1}^{n-1}\|x_{i+1}\|-\|x_i\| +\|x_1\|\|x^*\|
+            \\& =\|x\|+\|x_1\|(\|x^*\|-1)
+            \\&\le \|x\|
+            \end{aligned}
+            $$
+            Hence, $F_{\partial f,n}(x,x^*)\le \|x\|$. For the other direction, 
+            we can choose $x_1=\cdots =x_{n-1}=0$ and $x_{n-1}^*=x/\|x\|$ and $x_{i}^*=0$ for everything else. Then, indeed:
+            $F_{\partial f,n}(x,x^*)\ge \|x\|$.
+            </li>
+        </ol>
+        </p>
+    <p class="proof-end">□</p>
+    </details>
+
+    However, similarly to above, we notice that:
+    $$
+    F_{\partial f,n}(x,x^*) = f(x)+f^*(\nabla f(x))-H_n^*(f^*(\nabla f(x)))
+    $$ where $H_n\equiv f^*(x^*)$. First, note that for $x\ne 0$,
+    $f^*(\nabla f(x)) =0$ and therefore, $f^*(\nabla f(x))=0$ for all $x\in\mathbb{R}$. Now,
+    $$
+    \begin{aligned}
+    -H^*_n(f^*(\nabla f(x)))=-H^*_n(0)=-\sup_v\{-H_n(v)\}=f^*(x^*)
+    \end{aligned}
+    $$
+
+
+    
+    <h3 class="numbered" id="sec-neglog">Negative Logarithm</h3>
+    <span class="sidenote">Negative logarithm</span></p>
+    Consider the <strong>negative logarithm</strong> function defined as:$$
+    f:\mathbb{R}\to (-\infty,\infty],\quad x\mapsto \begin{cases} +\infty &x\le 0 \\-\ln x&x >0\end{cases}
+    $$
+    
+    Then, $\partial f(x)=\{-1 /x\}$ for $x>0$ and the conjugate is given by:
+    $$
+    f^*(x^*)=\begin{cases}-1-\ln (-x^*) & x^* < 0 \\ +\infty & x^* \ge 0\end{cases}
+    $$
+
+    <div class="box theorem">
+    <div class="box-title">Theorem 3.5 — Closed Form for Higher-order Fitzpatrick Function of Negative Logarithm</div>
+    <p class="statement">
+        Let $f$ be the negative logarithm function. Then, for $n\ge 2$, we have:
+        $$
+            F_{\partial f,n}(x,x^*) =\begin{cases}n(1-(-xx^*)^{1/n}) - 1 & x\ge 0, x^*\le 0 \\ +\infty & \text{otherwise}\end{cases}
+        $$ 
+    </p>
+    </div>
+
+    <details class="proof">
+    <summary></summary>
+    <p> By Theorem 2.2, we have that $\mathbb{R}_{>0}\times \mathbb{R}_{< 0} \subseteq \operatorname{dom} F_{\partial f,n}\subseteq \mathbb{R}_{\ge 0}\times \mathbb{R}_{\le 0}$. 
+       
+        Let $x\ge 0$ and $x^*\le 0$. We have the following cases:
+        <ol>
+            <li> If $x=0$, the Fitzpatrick objective function $h$ simplifies to:
+            $$
+            h(x_1, \dots, x_{n-1}) = x_1 x^* - \sum_{i=1}^{n-2} \frac{x_{i+1}}{x_i} - \frac{0}{x_{n-1}} + (n-1) = x_1 x^* - \sum_{i=1}^{n-2} \frac{x_{i+1}}{x_i} + (n-1)
+            $$
+            Since we want the supremum of $h$ subject to $x_1, \dots, x_{n-1} > 0$ and 
+            we are given $x^* \le 0$, we can choose $x_1 = \epsilon$ and $x_{i+1}/x_i = \epsilon$ for $i=1, \dots, n-2$. 
+            As $\epsilon \to 0^+$, we have $x_1 x^* = \epsilon x^* \to 0$ and $\sum_{i=1}^{n-2} \epsilon = (n-2)\epsilon \to 0$. 
+            Because the subtracted terms are strictly positive, the supremum is exactly $n-1$. </li>
+            <li> If $x^*=0$, the Fitzpatrick objective function $h$ becomes:
+            $$
+            h(x_1, \dots, x_{n-1}) = 0 - \sum_{i=1}^{n-1} \frac{x_{i+1}}{x_i} + (n-1)
+            $$
+            To maximize this, we must minimize the sum $\sum_{i=1}^{n-1} \frac{x_{i+1}}{x_i}$. 
+            Let $x_{i+1}/x_i = \epsilon$ for $i=1, \dots, n-1$. Since $x_n = x$, 
+            this requires choosing $x_1 = x / \epsilon^{n-1} > 0$. As $\epsilon \to 0^+$, the sum becomes $(n-1)\epsilon \to 0$. 
+            Thus, the supremum is again $n-1$.</li>
+            <li> Now, assume that $x>0$ and $x^* < 0$.
+
+            Let $x_n:= x$. Further, let $h$ be the objective function in the Fitzpatrick definition. Then, we have that the FOC's are given as below:
+            $$
+            \begin{aligned}
+                \frac{x_{i+1}}{x_i}&=\frac{x_i}{x_{i-1}},\quad i=1,\ldots,n-2,\\
+                -\frac{x_2}{x_1}&=x_1x^*
+            \end{aligned}
+            $$
+            By defining $r_i:= x_{i+1} / x_i$, we have that $r_i=r_{i-1}$ and $r_1=-x_1x^*$.
+            $$
+            \begin{aligned}
+            F_{\partial f,n}(x_n,x^*)
+            &=x_1x^*-\sum_{i=1}^{n-1}(r_i -1) =(n-1) - \sum_{i=1}^{n-1} r_i + x_1x^*
+            =(n-1) + nx_1x^*
+            \end{aligned}
+            $$
+            Then, $(-x_1x^*)^n=(-x_1x^*)\prod_{i=1}^{n-1}r_i=(-x_1x^*)\frac{x}{x_1}=-xx^*$ and:
+            $$
+            F_{\partial f,n}(x_n,x^*)=(n-1) - n(-xx^*)^{1/n} = n(1-(-xx^*)^{1/n}) - 1
+            $$</li>
+        </ol>
+
+        
+    </p>
+    <p class="proof-end">□</p>
+    </details>
+
+    <h3 class="numbered" id="sec-exp">Exponential Function</h3>
+    Consider the <strong>exponential</strong> function $f(x)=\exp(x)$. Then, $\partial f(x)=\{\exp(x)\}$ and the conjugate is given by the negative entropy function.
+
+
+    <div class="box theorem">
+    <div class="box-title">Theorem 3.6 — Closed Form for Higher-order Fitzpatrick Function of Exponential Subdifferential</div>
+    <p class="statement">
+        Let $f$ be the exponential function and $\Psi(w):=-\ln(1-w)$. Then, for $n\ge 2$, we have:
+        $$
+            F_{\partial f,n}(x,x^*) =f(x)+f^*(x^*)-H^*_n(f(x))
+        $$ where $H_n(v):=\Psi^n(v)x^*$ with $\Psi^n$ denoting the $n$-th iterate of $\Psi$.
+    </p>
+    </div>
+
+    <details class="proof">
+    <summary></summary>
+    <p> By <a href="#thm:2.2">Theorem 2.2</a>, $\operatorname{dom} F_{\partial f,n} = \mathbb{R} \times \mathbb{R}_{\ge 0} $ for all $n \ge 2$.
+
+        <p>We first rewrite the Fitzpatrick objective as a one-parameter optimization problem: 
+            Let $h$ be the objective function in the Fitzpatrick definition. Then, we have that the FOC's are given as below:
+        $$
+        \begin{aligned}
+                    e^{x_{i-1}-x_i}&=1-(x_{i+1}-x_i),\quad  i=2,\ldots,n-1\\
+            x^*e^{-x_1}&=1-(x_2-x_1)
+        \end{aligned}
+        $$</p>
+
+        <p>
+        By defining $r_i:= x_{i+1} - x_i$, we have that $r_{i-1}=\Psi(r_{i})$ and $r_1=1-x^*e^{-x_1}$.
+        Therefore, 
+
+        $$
+        \begin{aligned}
+        F_{\partial f,n}(x_n,x^*)&=\sum_{i=1}^{n-1}(x_{i+1}-x_i)e^{x_i} + x_1x^*
+        \\&=\sum_{i=2}^{n-1}(1-e^{x_{i-1}-x_i})e^{x_i}+(1-x^*e^{-x_1})e^{x_1}+x_1x^*
+        \\&=\sum_{i=2}^{n-1}(e^{x_i}-e^{x_{i-1}})+(e^{x_1}-x^*)+x_1x^*
+        \\&=e^{x_{n-1}}+(x_1-1)x^*
+        \end{aligned}
+        $$
+        Let us define $w:= r_{n-1}$. Then, by the FOCs we get that $r_{n-k}=\Psi^{k-1}(w)$. Hence, the original $n-1$ variables collapse into a single parameter $w>0$ with the endpoints linked by: 
+        $$
+        x_{n-1}=x-w,\quad x_1=\Psi^{n-1}(w) +\ln (x^*)
+        $$
+        Hence, we can rewrite the Fitzpatrick objective as a single parameter optimization problem:
+        $$
+        \begin{aligned}
+            F_{\partial f,n}(x,x^*) &= \inf_{w>0} \left[ e^{x-w}+x^*\Psi^{n-1}(w) + x^*\ln (x^*) - x^*\right]
+            \\&= \inf_{w>0} \left[ f(x)e^{-w}+f^*(x^*) + x^*\Psi^{n-1}(w)\right]
+            \end{aligned}
+        $$
+        The FOC of this single parameter optimization problem is given by:
+        $$
+            e^{x-w}=x^*\exp\left(\sum_{i=1}^{n-1}\Psi^{i}(w)\right)
+        $$
+        which coincides with the FOCs given by the original $n-1$ parameter optimization problem. Indeed, we have that:
+        $$
+        \Psi^{n-1}(w) +\ln (x^*) = x_1=x-\sum_{0\le i \le n-2}\Psi^i(w)
+        $$
+        i.e., $\sum_{0\le i\le n-1} \Psi^{i}(w)=x -\ln (x^*)$.
+        </p>
+
+
+        <p>
+            Therefore, we have that by substituting $v:=1-e^{-w}$:
+
+            $$
+            \begin{aligned}
+                F_{\partial f,n}(x,x^*) 
+                &= \inf_{w>0} \left[ f(x)e^{-w}+f^*(x^*) + x^*\Psi^{n-1}(w)\right]
+                \\&= \inf_{v\in (0,1)} \left[ f(x)(1-v)+f^*(x^*) + x^*\Psi^{n}(v)\right]
+                \\&= f(x)+f^*(x^*) - \sup_{v\in (0,1)} \left[ f(x)v - x^*\Psi^{n}(v)\right]
+                \\&= f(x)+f^*(x^*) - \sup_{v} \left[ f(x)v - x^*\Psi^{n}(v)\right]
+                \\&= f(x)+f^*(x^*) - H^*_n(f(x))
+            \end{aligned}
+            $$
+        </p>
+    </p>
+    <p class="proof-end">□</p>
+    </details>
+
+    <div class="box theorem">
+    <div class="box-title">Corollary 3.7 — Closed Form for Higher-order Fitzpatrick Function of Negative Entropy Subdifferential</div>
+    <p class="statement">
+        Let $f$ be the negative entropy and $\Psi(w):=-\ln(1-w)$. Then, for $n\ge 2$, we have:
+        $$
+            F_{\partial f,n}(x,x^*) =f(x)+f^*(x^*)-H^*_n(f^*(x^*))
+        $$ where $H_n(v):=\Psi^n(v)x$ with $\Psi^n$ denoting the $n$-th iterate of $\Psi$. In other words, the Fitzpatrick gap is given by:
+        $$
+        \Delta_{f,n}(x,x^*)=H^*_n(f^*(x^*))
+        $$
+    </p>
+    </div>
+
+    <details class="proof">
+    <summary></summary>
+    <p> Let $f$ be the negative entropy. Then, $f^* =\exp$ and:
+    $$
+    F_{\partial f,n}(x,x^*) = F_{\partial f^*,n}(x^*,x)=f(x)+f^*(x^*) -H^*_n(f^*(x^*))
+    $$where $H_n(v):=\Psi^n(v)x$ and $\Psi(v):=-\ln(1-v)$.
+    </p>
+    <p class="proof-end">□</p>
+    </details>
+    
+
+
+    
+    
+
+    
+
+
+  <h2 class="numbered" id="sec-convergence-rate">Convergence Rate of Fitzpatrick Functions</h2>
+  In this section, we analyze the convergence rate of the Fitzpatrick gap $\Delta_{f,n}(x,x^*)$ as $n\to \infty$. 
+  <h3 class="numbered" id="sec-conv-rate-neg-entropy">Convergence Rate of Negative Entropy Fitzpatrick Functions</h3>
+
+  <div class="box theorem">
+    <div class="box-title">Theorem 4.1 — Convergence Rate of Negative Entropy Fitzpatrick Functions</div>
+    <p class="statement">
+        Let $f$ be the negative entropy. Then, for the Fitzpatrick gap $\Delta_{f,n}(x,x^*)$, we have that:
+        $$
+            \lim_{n\to \infty} n\Delta_{f,n}(x,x^*) = \frac{\rho(x,e^{x^*})^2}{2}
+        $$where $\rho(x,x_0):=\int_{x_0}^x\sqrt{f''(t)}dt$ is the Fisher-Rao distance between $x$ and $x_0$. In other words, the Fitzpatrick functions converge at a rate of $O(1/n)$.
+    </p>
+    </div>
+
+    <details class="proof">
+    <summary></summary>
+    <p> Notice that $\Psi(v):=-\ln(1-v)$ has a fixed point at $v=0$ with $\Psi'(0) = 1$. Then, by Taylor expansion, $\Psi(v)=v+v^2/2+O(v^3)$ and around $0$:
+        $$
+        \frac{1}{\Psi(v)}=\frac{1}{v(1+v/2+O(v^2))}=\frac{1}{v}\left(1-\frac{v}{2}+O(v^2)\right)=\frac{1}{v}-\frac{1}{2}+O(v)
+        $$Telescoping, we get that 
+
+        $$
+        \begin{aligned}
+        \frac{1}{\Psi^n(v)}-\frac{1}{v}
+        &=\sum_{i=1}^n\left(\frac{1}{\Psi^i(v)}-\frac{1}{\Psi^{i-1}(v)}\right)
+        \\&=\sum_{i=1}^n\left(\frac{1}{\Psi(\Psi^{i-1}(v))}-\frac{1}{\Psi^{i-1}(v)}\right)
+        \\&=\sum_{i=1}^n\left[-\frac{1}{2}+O(\Psi^{i-1}(v))\right]
+        =\frac{1}{v}-\frac{n}{2}+O(1)
+        \end{aligned}
+        $$
+        
+        $\frac{1}{\Psi^n(v)}=\frac{1}{v}-\frac{n}{2}+O(1)$.
+
+        Now,
+
+        $$
+        \begin{aligned}
+            n\Delta_{f,n}(x,x^*) &= \sup_{v}\left[ ne^{x^*}v - nx\Psi^n(v)\right]
+            \\&= \sup_{\lambda}\left[\lambda e^{x^*} - nx\Psi^n(\lambda / n)\right]
+            \\&= \sup_{\lambda}\left[\lambda e^{x^*} - x \frac{2\lambda}{(2-\lambda)}\right]+O(n^{-1})
+        \end{aligned}
+        $$
+
+        where $\Psi^n(\lambda / n)  = \frac{1}{n( (2-\lambda)/2\lambda)+O(1)}=\frac{2\lambda}{n(2-\lambda)}+O(n^{-2})$. By differentiating, we have:
+        $$
+        e^{x^*}=x\frac{2(2-\lambda)+2\lambda}{(2-\lambda)^2}=\frac{4x}{(2-\lambda)^2}
+        $$
+        With $\gamma := \sqrt{x / e^{x^*}}$, we get $\lambda = 2(1-\gamma)$ and plugging back: 
+        $$
+        \begin{aligned}
+            \lim_{n\to \infty} n\Delta _n(x,x^*) 
+            &= 2(1-\gamma)e^{x^*} - 2x\left(\frac{1}{\gamma}-1\right)
+            \\&=2(e^{x^*}-\sqrt{xe^{x^*}})-2(\sqrt{xe^{x^*}}-x)
+            \\&=2(x-2\sqrt{xe^{x^*}}+e^{x^*})
+            \\&=2(\sqrt{x}-\sqrt{e^{x^*}})^2
+            \\&=\rho (x,e^{x^*})^2 / 2
+        \end{aligned}
+        $$
+
+        where we have that:
+
+        $$
+        \rho(x,x_0):=\int_{x_0}^x\sqrt{f''(t)}dt=\int_{x_0}^x \frac{1}{\sqrt{t}}dt=2(\sqrt{x}-\sqrt{x_0})
+        $$
+    </p>
+    <p class="proof-end">□</p>
+    </details>
+
+    <h3 class="numbered" id="sec-conv-rate-neg-entropy">General Convergence Rate</h3>
+
+    <div class="box theorem">
+    <div class="box-title">Theorem 4.2 — Convergence Rate of Fitzpatrick Functions</div>
+    <p class="statement">
+        Let $f:\Omega\subseteq \mathbb{R} \to \mathbb{R}$ be a proper, convex, and l.s.c. function with $f\in C^2(\Omega)$.
+        For any two points $x,x_0\in \Omega$ and the interval $I:=[x_0,x]$, if there exists $\mu,L>0$ s.t.
+        $\mu\le f''(t)\le L$ for all $t\in I$, 
+        then, for the Fitzpatrick gap $\Delta_{f,n}(x,\nabla f(x_0))$, we have that:
+        $$
+        \lim_{n\to \infty} n \Delta_{f,n}(x, f'(x_0)) = \frac{\rho(x,x_0)^2}{2}
+        $$
+        where $\rho(x,x_0):=\int_{x_0}^x\sqrt{f''(t)}dt$ is the Fisher-Rao distance between $x$ and $x_0$.
+    </p>
+    </div>
+
+    We show this by separately showing the lower and upper bounds. First, we show the lower bound:
+    <span class="sidenote">Bregman divergence</span></p>
+    <p>
+        By Theorem 2.1, we have that $\Delta_{f,n}(x_n,x^*_0)=\inf \sum_{i=0}^{n-1} d_f(x_{i+1},x_i^*)$. Notice that for $0\le i< n$, $x_i^*=f'(x_i)$ and by Fenchel-Young:
+        $$
+        \begin{aligned}
+        d_f(x_{i+1},x_i^*)
+        &=f(x_{i+1})+f^*(f'(x_i))-x_{i+1}f'(x_i)
+        \\&=f(x_{i+1})+(x_i f'(x_i) - f(x_i))-x_{i+1}f'(x_i)
+        \\&=f(x_{i+1})-f(x_i)- f'(x_i)(x_{i+1}-x_i)
+        \\&=D_f(x_{i+1},x_{i})
+        \end{aligned}
+        $$also known as the <strong>Bregman divergence</strong>. Then, by the mean-value form of Taylor's theorem, there exists some $\xi_i$ between $x_i$ and $x_{i+1}$ such that:
+        $$
+        D_f(x_{i+1},x_i)=\frac{1}{2}f''(\xi_i)(x_{i+1}-x_i)^2
+        $$
+        As $f''$ is continuous on the compact interval $I$, by Heine-Cantor, $\sqrt{f''}$ is uniformly continuous on $I$. Therefore, for any $\epsilon>0$, there exists $\delta>0$ such that for any $x_i,x_{i+1}\in I$ with $|x_{i+1}-x_i|<\delta$, we have that:
+    </p>
+
+    
+
+    
+  
+
+  <!-- ====================== REFERENCES ====================== -->
+  <h2 id="references">References</h2>
+  <div class="references">
+    <ol>
+      <li id="ref-bartz2007">
+        Bartz, S., Bauschke, H. H., Borwein, J. M., Reich, S., &amp; Wang, X. (2007).
+        Fitzpatrick functions, cyclic monotonicity and Rockafellar's antiderivative.
+        <em>Nonlinear Analysis: Theory, Methods &amp; Applications</em>, <em>66</em>(5), 1198–1223.
+        <a href="https://doi.org/10.1016/j.na.2006.01.013">doi:10.1016/j.na.2006.01.013</a>
+        </li>
+      <li id="ref-rockafellar1970">
+        Rockafellar, R. T. (1970).
+        On the maximal monotonicity of subdifferential mappings.
+        <em>Pacific Journal of Mathematics</em>, <em>33</em>(1), 209–216.
+        </li>
+        <li id="ref-bauschke2006">
+        Bauschke, H. H., McLaren, D. A., & Sendov, H. S. (2006).
+        Fitzpatrick functions: Inequalities, examples, and remarks on a problem by S. Fitzpatrick.
+        <em>Journal of Convex Analysis</em>, <em>13</em>, 499–523.
+        </li>
+    </ol>
+  </div>
+
+</article>
+
+<footer class="article">
+  <p>Companion page · ETH Zurich, Spring 2026. Built as a single static HTML file —
+  fork it, swap the content, and host on GitHub Pages.</p>
+</footer>
+
+<!-- ====================== INTERACTIVE DEMO SCRIPT ====================== -->
+<script>
+(function () {
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  const slider = document.getElementById('kappa');
+  const out = document.getElementById('kval');
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  // Pull live theme colors so the plot matches light/dark mode.
+  function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+  function resize() {
+    const w = canvas.clientWidth;
+    canvas.width = w * DPR;
+    canvas.height = 440 * DPR;
+    draw();
+  }
+
+  function draw() {
+    const kappa = Math.pow(10, parseFloat(slider.value)); // 1 .. 1000, log slider
+    out.textContent = kappa < 100 ? kappa.toFixed(1) : Math.round(kappa);
+
+    const W = canvas.width, H = canvas.height;
+    const pad = { l: 56 * DPR, r: 16 * DPR, t: 16 * DPR, b: 40 * DPR };
+    const plotW = W - pad.l - pad.r, plotH = H - pad.t - pad.b;
+
+    const ink = css('--ink'), muted = css('--muted'), rule = css('--rule');
+    const accent = css('--accent'), accent2 = css('--accent-2');
+
+    ctx.clearRect(0, 0, W, H);
+
+    // y axis = log10(suboptimality), from 0 down to -12
+    const yMin = -12, yMax = 0;
+    const kMax = 300;
+    const X = k => pad.l + (k / kMax) * plotW;
+    const Y = logv => pad.t + (1 - (logv - yMin) / (yMax - yMin)) * plotH;
+
+    // gridlines + y labels (powers of ten)
+    ctx.font = `${12 * DPR}px "IBM Plex Mono", monospace`;
+    ctx.textBaseline = 'middle';
+    ctx.strokeStyle = rule; ctx.fillStyle = muted; ctx.lineWidth = 1 * DPR;
+    for (let e = 0; e >= yMin; e -= 3) {
+      const y = Y(e);
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+      ctx.textAlign = 'right';
+      ctx.fillText('10' + (e === 0 ? '⁰' : superscript(e)), pad.l - 8 * DPR, y);
+    }
+    // x labels
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (let k = 0; k <= kMax; k += 50) {
+      ctx.fillText(k, X(k), H - pad.b + 8 * DPR);
+    }
+    // axis titles
+    ctx.fillStyle = muted;
+    ctx.fillText('iteration k', pad.l + plotW / 2, H - pad.b + 22 * DPR);
+
+    // curve plotter: value = (1 - rate)^k, plotted as log10
+    function curve(perStep, color) {
+      ctx.strokeStyle = color; ctx.lineWidth = 2.4 * DPR;
+      ctx.beginPath();
+      let started = false;
+      for (let k = 0; k <= kMax; k++) {
+        const logv = k * Math.log10(1 - perStep); // log10((1-r)^k)
+        if (logv < yMin) {
+          if (started) { ctx.lineTo(X(k), Y(yMin)); }
+          break;
+        }
+        const px = X(k), py = Y(logv);
+        if (!started) { ctx.moveTo(px, py); started = true; } else { ctx.lineTo(px, py); }
+      }
+      ctx.stroke();
+    }
+
+    curve(1 / kappa, accent2);                  // gradient descent
+    curve(1 / Math.sqrt(kappa), accent);        // accelerated
+  }
+
+  function superscript(n) {
+    const map = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³',
+                  '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+    return String(n).split('').map(c => map[c] || c).join('');
+  }
+
+  slider.addEventListener('input', draw);
+  window.addEventListener('resize', resize);
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+  }
+  resize();
+})();
 </script>
+
+<script>
+(function () {
+  const links = document.querySelectorAll('.toc a');
+  const headings = Array.from(links)
+    .map(a => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+
+  function onScroll() {
+    let current = headings[0];
+    for (const h of headings) {
+      if (h.getBoundingClientRect().top <= 80) current = h;
+    }
+    links.forEach(a => {
+      a.classList.toggle('active',
+        a.getAttribute('href') === '#' + current.id);
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+
+</body>
+</html>
